@@ -35,7 +35,7 @@ export default function HomePage() {
           </li>
         </ol>
         {parts.map((part) => (
-          <section key={part.id} className="part">
+          <section key={part.id} id={`part-${part.id}`} className="part">
             <p className="kicker">Part {part.number}</p>
             <h3>{part.title}</h3>
             <p className="part-description">{part.description}</p>

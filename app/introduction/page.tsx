@@ -4,7 +4,17 @@ import { chapterLabel, modules, parts } from "@/lib/course";
 
 export const metadata: Metadata = {
   title: "Introduction",
-  description: "How this book is organized, a few basic terms, and the example game used throughout.",
+  description:
+    "How this game design textbook is organized, how each chapter works, and the classic games used as examples throughout.",
+  alternates: {
+    canonical: "/introduction/",
+  },
+  openGraph: {
+    title: "Introduction · Practice Range",
+    description:
+      "How this game design textbook is organized, how each chapter works, and the classic games used as examples throughout.",
+    url: "https://tamb.github.io/textbook-game-design/introduction/",
+  },
 };
 
 export default function IntroductionPage() {

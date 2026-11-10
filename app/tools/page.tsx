@@ -3,7 +3,17 @@ import { PracticeTools } from "@/components/PracticeTools";
 
 export const metadata: Metadata = {
   title: "Practice Tools",
-  description: "Interactive calculators for frame advantage, forgiveness windows, and game feel.",
+  description:
+    "Interactive game design calculators for frame advantage, coyote time and input buffer milliseconds-to-frames conversion, and game feel diagnostics.",
+  alternates: {
+    canonical: "/tools/",
+  },
+  openGraph: {
+    title: "Practice Tools · Practice Range",
+    description:
+      "Interactive game design calculators for frame advantage, coyote time, input buffering, and game feel.",
+    url: "https://tamb.github.io/textbook-game-design/tools/",
+  },
 };
 
 export default function ToolsPage() {

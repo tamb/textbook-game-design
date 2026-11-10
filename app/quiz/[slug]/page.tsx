@@ -16,9 +16,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const chapter = getModule(slug);
   if (!chapter) return { title: "Missing review questions" };
+  const label = `Review Questions: ${chapterLabel(chapter)}`;
   return {
-    title: `Review questions: ${chapterLabel(chapter)}`,
-    description: `Review questions for ${chapterLabel(chapter)}: ${chapter.title}.`,
+    title: label,
+    description: `Review questions and concept checks for ${chapterLabel(chapter)}: ${chapter.title}.`,
+    alternates: {
+      canonical: `/quiz/${slug}/`,
+    },
+    openGraph: {
+      title: `${label} · Practice Range`,
+      description: `Test your understanding of ${chapterLabel(chapter)}: ${chapter.title}.`,
+      url: `https://tamb.github.io/textbook-game-design/quiz/${slug}/`,
+    },
   };
 }
 

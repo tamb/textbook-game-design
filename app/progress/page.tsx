@@ -3,7 +3,10 @@ import { ProgressPage } from "@/components/ProgressPage";
 
 export const metadata: Metadata = {
   title: "My Progress",
-  description: "Chapters you have marked as read and your review question scores.",
+  description: "Track chapters marked as read and review question scores stored locally in your browser.",
+  alternates: {
+    canonical: "/progress/",
+  },
 };
 
 export default function MyProgressPage() {

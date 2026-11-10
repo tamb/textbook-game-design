@@ -4,8 +4,18 @@ import { chapterLabel, modules } from "@/lib/course";
 import { termsForModule } from "@/lib/glossary";
 
 export const metadata: Metadata = {
-  title: "Glossary",
-  description: "Definitions of every key term in the book, grouped by chapter.",
+  title: "Glossary of Game Design Terms",
+  description:
+    "Comprehensive glossary of essential game design terms: game feel, frame data, hitboxes, hurtboxes, pushboxes, coyote time, input buffering, AABB, MDA, and more.",
+  alternates: {
+    canonical: "/glossary/",
+  },
+  openGraph: {
+    title: "Glossary of Game Design Terms · Practice Range",
+    description:
+      "Definitions and explanations of over 70 fundamental game design terms, grouped by chapter with search.",
+    url: "https://tamb.github.io/textbook-game-design/glossary/",
+  },
 };
 
 export default function GlossaryPage() {

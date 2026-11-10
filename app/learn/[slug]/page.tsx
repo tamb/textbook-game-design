@@ -7,6 +7,8 @@ import { StudyBar } from "@/components/StudyBar";
 import { chapterLabel, getModule, getPart, modules, neighbors, summarize } from "@/lib/course";
 import { termsForModule } from "@/lib/glossary";
 
+const siteUrl = "https://tamb.github.io/textbook-game-design";
+
 export function generateStaticParams() {
   return modules.map((chapter) => ({ slug: chapter.slug }));
 }
@@ -19,7 +21,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const chapter = getModule(slug);
   if (!chapter) return { title: "Missing chapter" };
-  return { title: `${chapterLabel(chapter)}: ${chapter.title}`, description: chapter.summary };
+  const label = `${chapterLabel(chapter)}: ${chapter.title}`;
+  return {
+    title: label,
+    description: chapter.summary,
+    alternates: {
+      canonical: `/learn/${slug}/`,
+    },
+    openGraph: {
+      title: `${label} · Practice Range`,
+      description: chapter.summary,
+      url: `${siteUrl}/learn/${slug}/`,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${label} · Practice Range`,
+      description: chapter.summary,
+    },
+  };
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -32,8 +52,59 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const terms = termsForModule(slug);
   const number = Number(chapter.number);
 
+  const chapterJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Contents",
+            "item": `${siteUrl}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": `Part ${part.number}: ${part.title}`,
+            "item": `${siteUrl}/#part-${part.id}`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": `${chapterLabel(chapter)}: ${chapter.title}`,
+            "item": `${siteUrl}/learn/${chapter.slug}/`,
+          },
+        ],
+      },
+      {
+        "@type": "Chapter",
+        "@id": `${siteUrl}/learn/${chapter.slug}/#chapter`,
+        "position": number,
+        "name": `${chapterLabel(chapter)}: ${chapter.title}`,
+        "headline": chapter.title,
+        "description": chapter.summary,
+        "url": `${siteUrl}/learn/${chapter.slug}/`,
+        "learningResourceType": "Textbook Chapter",
+        "educationalLevel": "Beginner",
+        "inLanguage": "en",
+        "isPartOf": {
+          "@type": "Book",
+          "name": "Practice Range: An Introduction to Game Design",
+          "url": `${siteUrl}/`,
+        },
+        "about": terms.map((t) => t.name),
+      },
+    ],
+  };
+
   return (
     <article className="lesson chapter">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(chapterJsonLd) }}
+      />
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link href="/">Contents</Link>
         <span aria-hidden="true">›</span>
