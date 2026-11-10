@@ -1,5 +1,5 @@
 {
-  "name": "practice-range",
+  "name": "textbook-game-design",
   "private": true,
   "scripts": {
     "check": "tsx scripts/self-check.ts",
