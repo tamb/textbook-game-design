@@ -57,8 +57,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <p>
         Examples in this book reference classic games such as <strong>Super Mario Bros.</strong>,{" "}
-        <strong>Street Fighter</strong>, <strong>Celeste</strong>, and <strong>Tetris</strong>. Your progress is saved
-        only in this browser.
+        <strong>Street Fighter</strong>,         <strong>Celeste</strong>, and <strong>Tetris</strong>. Your progress and your place in the book are saved only
+        in this browser.
       </p>
       <p>Further reading:</p>
       <ul>

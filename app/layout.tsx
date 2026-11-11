@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Outfit } from "next/font/google";
 import { PwaRegister } from "@/components/PwaRegister";
+import { ResumePlace } from "@/components/ResumePlace";
 import { ProgressProvider } from "@/components/ProgressProvider";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { modules, summarize, summaries } from "@/lib/course";
+import { resumeBootScript } from "@/lib/place";
 import "./globals.css";
 
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
@@ -162,6 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: resumeBootScript(basePath) }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -169,6 +172,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <PwaRegister />
+        <ResumePlace />
         <a className="skip" href="#content">
           Skip to content
         </a>
