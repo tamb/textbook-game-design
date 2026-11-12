@@ -64,7 +64,7 @@ export function QuizRunner({
         const unanswered = Boolean(error) && !picked;
         const gotIt = result ? picked === question.answer : null;
         return (
-          <fieldset key={question.id} className={unanswered ? "needs-answer" : undefined}>
+          <fieldset id={question.id} key={question.id} className={unanswered ? "needs-answer" : undefined}>
             <legend>
               <span>Question {index + 1}</span>
               {question.prompt}

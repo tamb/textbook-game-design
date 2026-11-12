@@ -158,7 +158,10 @@ nav a[aria-current="page"] { color: var(--amber); }
 
 .lesson { padding-bottom: 1rem; }
 .prose > p, .prose > h2, .prose > ul, .prose > ol, .prose .callout, .prose .example { max-width: 70ch; }
-.prose h2 { scroll-margin-top: 1rem; }
+.prose h2,
+main h2[id],
+main section[id],
+main fieldset[id] { scroll-margin-top: 1rem; }
 .prose ul, .prose ol { padding-left: 1.2rem; }
 .callout, .example {
   border-left: 4px solid var(--amber);

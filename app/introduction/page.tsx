@@ -173,6 +173,10 @@ export default function IntroductionPage() {
             <Link href="/progress/">My Progress</Link> shows which chapters you have marked as read and your review
             scores. Your progress is saved only in this web browser. There is no account, and nothing is sent anywhere.
           </li>
+          <li>
+            If you add this site to your home screen, opening it again returns you to the last page and section you
+            were reading. That place is saved only in this browser.
+          </li>
         </ul>
       </div>
 

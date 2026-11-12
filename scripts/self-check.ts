@@ -1,7 +1,9 @@
+import vm from "node:vm";
 import { attackerBusy, frameAdvantage, framesFromMs } from "../lib/designMath";
 import { passMark } from "../lib/grade";
 import { glossary } from "../lib/glossary";
 import { modules } from "../lib/course";
+import { canonicalPlace, parsePlace, PLACE_KEY, resumeBootScript, resumeHref, SESSION_KEY } from "../lib/place";
 import { clearSlugs, emptyLogbook, markLesson, parseLogbook, quizIfCurrent, recordQuiz } from "../lib/progress";
 import { headingId } from "../lib/slug";
 
@@ -93,6 +95,131 @@ const dirty = parseLogbook(JSON.stringify({ version: 1, lessons: { feel: { compl
 expect(dirty.lessons.feel?.completedAt === "2026-01-01T00:00:00.000Z", "valid study marks survive a dirty logbook");
 expect(!dirty.lessons.bad, "a study mark without a timestamp is dropped");
 expect(!dirty.quizzes.feel, "a quiz record missing its fields is dropped");
+
+expect(canonicalPlace("/learn/feel", "polish")?.path === "/learn/feel/", "a chapter path gains a trailing slash");
+expect(canonicalPlace("/learn/feel/", "polish")?.section === "polish", "a safe section is kept");
+expect(canonicalPlace("/logbook/", null)?.path === "/progress/", "the old logbook address resumes on My Progress");
+expect(canonicalPlace("/bench/", "frame-advantage")?.path === "/tools/", "the old bench address resumes on Practice Tools");
+expect(canonicalPlace("https://evil.example/", "polish") === null, "an off-site address is not a place");
+expect(canonicalPlace("/learn/feel/../../", "polish") === null, "a path cannot climb out of the site");
+expect(canonicalPlace("/learn/feel/", "../polish")?.section === null, "a section cannot be a path");
+expect(canonicalPlace("/learn/feel/", "polish<script>")?.section === null, "a section is limited to an anchor id");
+expect(parsePlace('{"path":"/quiz/frames/","section":"frames-2"}')?.section === "frames-2", "a saved quiz question is a section");
+expect(parsePlace("{") === null, "broken place data is ignored");
+expect(resumeHref({ path: "/learn/feel/", section: "polish" }, "/textbook-game-design") === "/textbook-game-design/learn/feel/#polish", "resume keeps the site prefix and the section");
+expect(resumeHref({ path: "/", section: null }) === "", "the contents page with no section is not a resume target");
+expect(resumeHref({ path: "/", section: "part-two" }, "") === "/#part-two", "a contents part is restored");
+
+type BootOptions = {
+  base?: string;
+  pathname: string;
+  search?: string;
+  hash?: string;
+  place?: unknown;
+  standalone?: boolean;
+  ios?: boolean;
+  session?: string | null;
+};
+
+function boot(options: BootOptions) {
+  const local = new Map<string, string>();
+  if ("place" in options) local.set(PLACE_KEY, JSON.stringify(options.place));
+  const session = new Map<string, string>();
+  if (options.session) session.set(SESSION_KEY, options.session);
+  let replaced: string | null = null;
+  let replacedState: string | null = null;
+  const window = {
+    location: {
+      pathname: options.pathname,
+      search: options.search ?? "",
+      hash: options.hash ?? "",
+      replace(url: string) {
+        replaced = url;
+      },
+    },
+    localStorage: {
+      getItem: (key: string) => local.get(key) ?? null,
+      setItem: (key: string, value: string) => local.set(key, value),
+    },
+    sessionStorage: {
+      getItem: (key: string) => session.get(key) ?? null,
+      setItem: (key: string, value: string) => session.set(key, value),
+    },
+    navigator: { standalone: Boolean(options.ios) },
+    matchMedia(query: string) {
+      return { matches: Boolean(options.standalone) && query.includes("display-mode: standalone") };
+    },
+    history: {
+      replaceState(_state: unknown, _title: string, url: string) {
+        replacedState = url;
+      },
+    },
+    __resumeHold: false,
+  };
+  const context = vm.createContext({ window, JSON, URLSearchParams });
+  vm.runInContext(resumeBootScript(options.base ?? ""), context);
+  return { replaced, replacedState, hold: window.__resumeHold, session: session.get(SESSION_KEY) ?? null };
+}
+
+const savedChapter = { path: "/learn/feel/", section: "polish" };
+const coldStart = boot({
+  base: "/textbook-game-design",
+  pathname: "/textbook-game-design/",
+  search: "?source=pwa",
+  place: savedChapter,
+});
+expect(coldStart.replaced === "/textbook-game-design/learn/feel/#polish", "launching the installed app opens the saved section");
+expect(coldStart.hold, "the contents page does not overwrite the saved place while it is leaving");
+expect(coldStart.session === "1", "a launch counts as a session");
+
+const ordinary = boot({ pathname: "/", place: savedChapter });
+expect(ordinary.replaced === null, "opening the site in a browser tab stays on the page that was requested");
+
+const inSession = boot({
+  pathname: "/",
+  standalone: true,
+  session: "1",
+  place: savedChapter,
+});
+expect(inSession.replaced === null, "refreshing the contents page during a session stays on contents");
+
+const freshStandalone = boot({ pathname: "/", standalone: true, place: savedChapter });
+expect(freshStandalone.replaced === "/learn/feel/#polish", "a fresh standalone launch without the query still resumes");
+
+const ios = boot({ pathname: "/", search: "", ios: true, place: savedChapter });
+expect(ios.replaced === "/learn/feel/#polish", "an iOS home-screen launch resumes");
+
+const samePage = boot({
+  base: "/textbook-game-design",
+  pathname: "/textbook-game-design/learn/frames/",
+  standalone: true,
+  place: { path: "/learn/frames/", section: "startup" },
+});
+expect(samePage.replaced === "/textbook-game-design/learn/frames/#startup", "reopening a chapter restores its section");
+expect(!samePage.hold, "restoring a hash on the current page keeps recording");
+
+const explicitChapter = boot({
+  pathname: "/learn/combat/",
+  search: "?source=pwa",
+  standalone: true,
+  place: savedChapter,
+});
+expect(explicitChapter.replaced === null, "a direct chapter address is not replaced by a different saved page");
+expect(explicitChapter.replacedState === "/learn/combat/", "the launch query is removed from a direct address");
+
+const hostile = boot({
+  pathname: "/",
+  search: "?source=pwa",
+  place: { path: "https://evil.example/learn/feel/", section: "polish" },
+});
+expect(hostile.replaced === null, "a saved address outside the book is ignored");
+expect(hostile.replacedState === "/", "a launch with nothing safe to open still clears the launch query");
+
+const homePart = boot({ pathname: "/", search: "?source=pwa", place: { path: "/", section: "part-two" } });
+expect(homePart.replaced === "/#part-two", "a saved part of the contents page is restored");
+
+const noHistory = boot({ pathname: "/", search: "?source=pwa" });
+expect(noHistory.replaced === null && noHistory.replacedState === "/", "the first launch opens the contents page");
 
 if (failures.length) {
   console.error(failures.join("\n"));

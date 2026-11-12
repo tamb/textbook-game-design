@@ -2,9 +2,13 @@
   "name": "Practice Range: An Introduction to Game Design",
   "short_name": "Game Design",
   "description": "A beginner's textbook on game design: game feel, attack timing, forgiveness, collision, game structure, and teaching the player.",
-  "start_url": "./",
+  "id": "./",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "background_color": "#12140e",
   "theme_color": "#12140e",
   "orientation": "any",
