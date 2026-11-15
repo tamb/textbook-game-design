@@ -181,7 +181,7 @@ main fieldset[id] { scroll-margin-top: 1rem; }
   margin: 0;
   color: var(--amber);
 }
-.frame-strip, .table-wrap { margin: 1.2rem 0; max-width: 880px; }
+.frame-strip, .table-wrap { margin: 1.2rem 0; max-width: min(880px, 100%); min-width: 0; }
 .frame-bar {
   display: grid;
   min-height: 64px;
@@ -202,8 +202,35 @@ main fieldset[id] { scroll-margin-top: 1rem; }
 .frame-bar span:nth-child(1) { background: var(--startup); }
 .frame-bar span:nth-child(2) { background: var(--active); color: white; }
 .frame-bar span:nth-child(3) { background: var(--recovery); }
-.table-scroll { overflow-x: auto; }
+.table-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(240, 180, 41, 0.85) rgba(244, 239, 226, 0.12);
+}
+.table-scroll::-webkit-scrollbar { height: 8px; }
+.table-scroll::-webkit-scrollbar-track { background: rgba(244, 239, 226, 0.12); border-radius: 999px; }
+.table-scroll::-webkit-scrollbar-thumb { background: rgba(240, 180, 41, 0.85); border-radius: 999px; }
+.table-scroll[data-overflow="true"][data-scroll-edge="start"] {
+  --table-mask: linear-gradient(to right, #000 calc(100% - 1.75rem), transparent);
+}
+.table-scroll[data-overflow="true"][data-scroll-edge="middle"] {
+  --table-mask: linear-gradient(to right, transparent, #000 1.75rem, #000 calc(100% - 1.75rem), transparent);
+}
+.table-scroll[data-overflow="true"][data-scroll-edge="end"] {
+  --table-mask: linear-gradient(to right, transparent, #000 1.75rem);
+}
+.table-scroll[data-overflow="true"] {
+  -webkit-mask-image: var(--table-mask);
+  mask-image: var(--table-mask);
+}
 table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+table.is-compact { width: max-content; min-width: 100%; }
+table.is-compact th,
+table.is-compact td { white-space: nowrap; }
 th, td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-family: var(--font-mono), ui-monospace, monospace; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .term-list ul { list-style: none; padding: 0; }
@@ -296,6 +323,7 @@ th { font-family: var(--font-mono), ui-monospace, monospace; font-size: 0.75rem;
 .breadcrumb a { color: var(--muted); }
 .chapter-head { margin-bottom: 1.6rem; }
 .chapter-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 2.2rem; align-items: start; }
+.chapter-body { min-width: 0; }
 .toc { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; border-left: 2px solid var(--line); padding-left: 1rem; font-size: 0.92rem; }
 .toc-title { font-family: var(--font-mono), ui-monospace, monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin: 0 0 0.5rem; }
 .toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.45rem; }
@@ -341,7 +369,8 @@ th { font-family: var(--font-mono), ui-monospace, monospace; font-size: 0.75rem;
 .meter-readout { margin: 0; }
 
 @media (max-width: 900px) {
-  .chapter-layout { grid-template-columns: 1fr; gap: 1rem; }
+  /* Keep the column within the viewport so wide tables scroll inside .table-scroll. */
+  .chapter-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
   .toc { position: static; max-height: none; border-left: none; border: 1px solid var(--line); border-radius: 14px; padding: 0.9rem 1rem; }
 }
 @media (max-width: 800px) {

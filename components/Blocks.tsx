@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TableScroll } from "@/components/TableScroll";
 import { headingId } from "@/lib/slug";
 import type { Block } from "@/lib/types";
 
@@ -95,11 +96,12 @@ export function Blocks({ blocks, chapter }: { blocks: Block[]; chapter: number }
             </figure>
           );
         }
+        const compact = [block.headers, ...block.rows].every((row) => row.every((cell) => cell.length <= 24));
         return (
           <figure key={index} className="table-wrap">
             {block.caption ? <figcaption>{block.caption}</figcaption> : null}
-            <div className="table-scroll">
-              <table>
+            <TableScroll label={block.caption ?? "Data table"}>
+              <table className={compact ? "is-compact" : undefined}>
                 <thead>
                   <tr>
                     {block.headers.map((header, headerIndex) => (
@@ -119,7 +121,7 @@ export function Blocks({ blocks, chapter }: { blocks: Block[]; chapter: number }
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </figure>
         );
       })}
